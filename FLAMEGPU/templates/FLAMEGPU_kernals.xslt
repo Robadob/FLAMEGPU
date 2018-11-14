@@ -1049,7 +1049,7 @@ __device__ bool load_next_<xsl:value-of select="xmml:name"/>_message(xmachine_me
 	while(move_cell)
 	{
 		//get the next relative grid position <!-- check the z component to see if we are operating in 2d or 3d -->
-        if (next_cell<xsl:choose><xsl:when test="ceiling((gpu:partitioningSpatial/gpu:zmax - gpu:partitioningSpatial/gpu:zmin) div gpu:partitioningSpatial/gpu:radius) = 1">2D</xsl:when><xsl:otherwise>3D</xsl:otherwise></xsl:choose>(&amp;relative_cell))
+        if (next_cell<xsl:choose><xsl:when test="ceiling((gpu:partitioningSpatial/gpu:zmax - gpu:partitioningSpatial/gpu:zmin) div (gpu:partitioningSpatial/gpu:radius * gpu:partitioningSpatial/gpu:modifier)) = 1">2D</xsl:when><xsl:otherwise>3D</xsl:otherwise></xsl:choose>(&amp;relative_cell))
 		{
 			//calculate the next cells grid position and hash
 			glm::ivec3 next_cell_position = agent_grid_cell + relative_cell;
