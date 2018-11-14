@@ -87,15 +87,18 @@ __constant__ int d_PADDING;
 //if doubel support is needed then define the following function which requires sm_13 or later
 #ifdef _DOUBLE_SUPPORT_REQUIRED_
 __inline__ __device__ double tex1DfetchDouble(texture&lt;int2, 1, cudaReadModeElementType&gt; tex, int i)
-{
-	int2 v = tex1Dfetch(tex, i);
+  {
+  int2 v = tex1Dfetch(tex, i);
   //IF YOU HAVE AN ERROR HERE THEN YOU ARE USING DOUBLE VALUES IN AGENT MEMORY AND NOT COMPILING FOR DOUBLE SUPPORTED HARDWARE
   //To compile for double supported hardware change the CUDA Build rule property "Use sm_13 Architecture (double support)" on the CUDA-Specific Propert Page of the CUDA Build Rule for simulation.cu
-	return __hiloint2double(v.y, v.x);
-}
-#endif
+  return __hiloint2double(v.y, v.x);
+  }
+  #endif
+
 
 /* Helper functions */
+<xsl:for-each select="gpu:xmodel/xmml:messages/gpu:message/gpu:partitioningSpatial[1]">
+<xsl:variable name="range" select="ceiling(1.0 div gpu:modifier)"/>
 /** next_cell
  * Function used for finding the next cell when using spatial partitioning
  * Upddates the relative cell variable which can have value of -1, 0 or +1
@@ -104,26 +107,26 @@ __inline__ __device__ double tex1DfetchDouble(texture&lt;int2, 1, cudaReadModeEl
  */
 __device__ bool next_cell3D(glm::ivec3* relative_cell)
 {
-	if (relative_cell->x &lt; 1)
+	if (relative_cell->x &lt; <xsl:value-of select="$range"/>)
 	{
 		relative_cell->x++;
 		return true;
 	}
-	relative_cell->x = -1;
+	relative_cell->x = -<xsl:value-of select="$range"/>;
 
-	if (relative_cell->y &lt; 1)
+	if (relative_cell->y &lt; <xsl:value-of select="$range"/>)
 	{
 		relative_cell->y++;
 		return true;
 	}
-	relative_cell->y = -1;
+	relative_cell->y = -<xsl:value-of select="$range"/>;
 	
-	if (relative_cell->z &lt; 1)
+	if (relative_cell->z &lt; <xsl:value-of select="$range"/>)
 	{
 		relative_cell->z++;
 		return true;
 	}
-	relative_cell->z = -1;
+	relative_cell->z = -<xsl:value-of select="$range"/>;
 	
 	return false;
 }
@@ -136,22 +139,23 @@ __device__ bool next_cell3D(glm::ivec3* relative_cell)
  */
 __device__ bool next_cell2D(glm::ivec3* relative_cell)
 {
-	if (relative_cell->x &lt; 1)
+	if (relative_cell->x &lt; <xsl:value-of select="$range"/>)
 	{
 		relative_cell->x++;
 		return true;
 	}
 	relative_cell->x = -1;
 
-	if (relative_cell->y &lt; 1)
+	if (relative_cell->y &lt; <xsl:value-of select="$range"/>)
 	{
 		relative_cell->y++;
 		return true;
 	}
-	relative_cell->y = -1;
-	
-	return false;
-}
+	relative_cell->y = -<xsl:value-of select="$range"/>;
+
+  return false;
+  }
+</xsl:for-each>
 
 <xsl:for-each select="gpu:xmodel/xmml:xagents/gpu:xagent/xmml:functions/gpu:function/xmml:condition">
 /** <xsl:value-of select="../xmml:name"/>_function_filter
