@@ -1115,10 +1115,10 @@ __device__ xmachine_message_<xsl:value-of select="xmml:name"/>* get_first_<xsl:v
 
 	// If there are no messages, do not load any messages
 	if(d_message_<xsl:value-of select="xmml:name"/>_count == 0){
-		return nullptr;
-	}
-
-	glm::ivec3 relative_cell = glm::ivec3(-2, -1, -1);
+  return nullptr;
+  }
+  <xsl:variable name="range" select="ceiling(1.0 div gpu:partitioningSpatial/gpu:modifier)"/>
+	glm::ivec3 relative_cell = glm::ivec3(-<xsl:value-of select="$range + 1"/>, -<xsl:value-of select="$range"/>, -<xsl:value-of select="$range"/>);
 	int cell_index_max = 0;
 	int cell_index = 0;
 	glm::vec3 position = glm::vec3(x, y, z);
