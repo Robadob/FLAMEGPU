@@ -38,9 +38,9 @@
 <xsl:for-each select="gpu:xmodel/xmml:messages/gpu:message/gpu:partitioningSpatial">
 <!-- Calculate some values. -->
 <xsl:variable name="message_name" select="../xmml:name"/>
-<xsl:variable name="x_dim"><xsl:value-of select="ceiling((gpu:xmax - gpu:xmin) div gpu:radius)"/></xsl:variable>
-<xsl:variable name="y_dim"><xsl:value-of select="ceiling((gpu:ymax - gpu:ymin) div gpu:radius)"/></xsl:variable>
-<xsl:variable name="z_dim"><xsl:value-of select="ceiling((gpu:zmax - gpu:zmin) div gpu:radius)"/></xsl:variable>
+<xsl:variable name="x_dim"><xsl:value-of select="ceiling((gpu:xmax - gpu:xmin) div (gpu:radius * gpu:modifier))"/></xsl:variable>
+<xsl:variable name="y_dim"><xsl:value-of select="ceiling((gpu:ymax - gpu:ymin) div (gpu:radius * gpu:modifier))"/></xsl:variable>
+<xsl:variable name="z_dim"><xsl:value-of select="ceiling((gpu:zmax - gpu:zmin) div (gpu:radius * gpu:modifier))"/></xsl:variable>
 <!-- If radius is not a factor of the partitioning dimensions as this causes partitioning to execute incorrectly-->
 <xsl:if test="(gpu:xmax - gpu:xmin) != (floor((gpu:xmax - gpu:xmin ) div (gpu:radius * gpu:modifier)) * (gpu:radius * gpu:modifier))">
 #error "XML model spatial partitioning (radius x modifier) for message <xsl:value-of select="$message_name" /> must be a factor of partitioning dimensions. Radius: <xsl:value-of select="gpu:radius"/>, Modifier: <xsl:value-of select="gpu:modifier"/>, Xmin: <xsl:value-of select="gpu:xmin"/>, Xmax: <xsl:value-of select="gpu:xmax"/>"
@@ -51,11 +51,12 @@
 </xsl:if>
 
 <!-- If the resulting number of bins in the X or Y planes is less than 3, generate a compile time error. -->
-<xsl:if test="$x_dim &lt; 3">
-#error "XML model spatial partitioning radius for for message <xsl:value-of select="$message_name" /> is too large for X dimension. ceil((Xmax-Xmin)/Radius) = <xsl:value-of select="$x_dim"/> but must be &gt;= 3. Radius: <xsl:value-of select="gpu:radius"/>, Xmin: <xsl:value-of select="gpu:xmin"/>, Xmax: <xsl:value-of select="gpu:xmax"/>. Consider using partitioningNone."
+<xsl:variable name="dim_min"><xsl:value-of select="(1+(2*ceiling(1.0 div gpu:modifier)))"/></xsl:variable>
+<xsl:if test="$x_dim &lt; $dim_min">
+#error "XML model spatial partitioning radius for for message <xsl:value-of select="$message_name" /> is too large for X dimension. ceil((Xmax-Xmin)/Radius) = <xsl:value-of select="$x_dim"/> but must be &gt;= <xsl:value-of select="dim_min"/>. Radius: <xsl:value-of select="gpu:radius"/>, Xmin: <xsl:value-of select="gpu:xmin"/>, Xmax: <xsl:value-of select="gpu:xmax"/>. Consider using partitioningNone."
 </xsl:if>
-<xsl:if test="$y_dim &lt; 3">
-#error "XML model spatial partitioning radius for for message <xsl:value-of select="$message_name" /> is too large for Y dimension. ceil((Xmax-Xmin)/Radius) = <xsl:value-of select="$y_dim"/> but must be &gt;= 3. Radius: <xsl:value-of select="gpu:radius"/>, Ymin: <xsl:value-of select="gpu:ymin"/>, Ymax: <xsl:value-of select="gpu:ymax"/>. Consider using partitioningNone."
+<xsl:if test="$y_dim &lt; $dim_min">
+#error "XML model spatial partitioning radius for for message <xsl:value-of select="$message_name" /> is too large for Y dimension. ceil((Xmax-Xmin)/Radius) = <xsl:value-of select="$y_dim"/> but must be &gt;= <xsl:value-of select="dim_min"/>. Radius: <xsl:value-of select="gpu:radius"/>, Ymin: <xsl:value-of select="gpu:ymin"/>, Ymax: <xsl:value-of select="gpu:ymax"/>. Consider using partitioningNone."
 </xsl:if>
 </xsl:for-each>
 
