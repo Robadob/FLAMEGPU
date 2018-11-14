@@ -232,6 +232,7 @@
 		<xs:complexContent>
 			<xs:extension base="partitioning_type">
 				<xs:sequence>
+          <xs:element name="modifier" type="xs:decimal" default="1.0" />
 					<xs:element name="radius" type="xs:decimal" />
 					<xs:element name="xmin" type="xs:decimal" />
 					<xs:element name="xmax" type="xs:decimal" />

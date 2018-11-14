@@ -91,9 +91,9 @@ typedef glm::dvec4 dvec4;
 </xsl:for-each>
 
 /* Spatial partitioning grid size definitions */<xsl:for-each select="gpu:xmodel/xmml:messages/gpu:message"><xsl:if test="gpu:partitioningSpatial">
-//xmachine_message_<xsl:value-of select="xmml:name"/> partition grid size (gridDim.X*gridDim.Y*gridDim.Z)<xsl:variable name="x_dim"><xsl:value-of select="ceiling ((gpu:partitioningSpatial/gpu:xmax - gpu:partitioningSpatial/gpu:xmin) div gpu:partitioningSpatial/gpu:radius)"/></xsl:variable>
-<xsl:variable name="y_dim"><xsl:value-of select="ceiling ((gpu:partitioningSpatial/gpu:ymax - gpu:partitioningSpatial/gpu:ymin) div gpu:partitioningSpatial/gpu:radius)"/></xsl:variable>
-<xsl:variable name="z_dim"><xsl:value-of select="ceiling ((gpu:partitioningSpatial/gpu:zmax - gpu:partitioningSpatial/gpu:zmin) div gpu:partitioningSpatial/gpu:radius)"/></xsl:variable>
+//xmachine_message_<xsl:value-of select="xmml:name"/> partition grid size (gridDim.X*gridDim.Y*gridDim.Z)<xsl:variable name="x_dim"><xsl:value-of select="ceiling ((gpu:partitioningSpatial/gpu:xmax - gpu:partitioningSpatial/gpu:xmin) div (gpu:partitioningSpatial/gpu:radius * gpu:partitioningSpatial/gpu:modifier))"/></xsl:variable>
+<xsl:variable name="y_dim"><xsl:value-of select="ceiling ((gpu:partitioningSpatial/gpu:ymax - gpu:partitioningSpatial/gpu:ymin) div (gpu:partitioningSpatial/gpu:radius * gpu:partitioningSpatial/gpu:modifier))"/></xsl:variable>
+<xsl:variable name="z_dim"><xsl:value-of select="ceiling ((gpu:partitioningSpatial/gpu:zmax - gpu:partitioningSpatial/gpu:zmin) div (gpu:partitioningSpatial/gpu:radius * gpu:partitioningSpatial/gpu:modifier))"/></xsl:variable>
 #define xmachine_message_<xsl:value-of select="xmml:name"/>_grid_size <xsl:value-of select="$x_dim * $y_dim * $z_dim"/>
 </xsl:if></xsl:for-each>
 
