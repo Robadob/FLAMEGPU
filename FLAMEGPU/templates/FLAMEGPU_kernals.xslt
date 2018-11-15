@@ -107,12 +107,14 @@ __inline__ __device__ double tex1DfetchDouble(texture&lt;int2, 1, cudaReadModeEl
  */
 __device__ bool next_cell3D(glm::ivec3* relative_cell)
 {
+#ifndef STRIPS
 	if (relative_cell->x &lt; <xsl:value-of select="$range"/>)
 	{
 		relative_cell->x++;
 		return true;
 	}
 	relative_cell->x = -<xsl:value-of select="$range"/>;
+#endif
 
 	if (relative_cell->y &lt; <xsl:value-of select="$range"/>)
 	{
@@ -139,12 +141,14 @@ __device__ bool next_cell3D(glm::ivec3* relative_cell)
  */
 __device__ bool next_cell2D(glm::ivec3* relative_cell)
 {
+#ifndef STRIPS
 	if (relative_cell->x &lt; <xsl:value-of select="$range"/>)
 	{
 		relative_cell->x++;
 		return true;
 	}
-	relative_cell->x = -1;
+	relative_cell->x = -<xsl:value-of select="$range"/>;
+#endif
 
 	if (relative_cell->y &lt; <xsl:value-of select="$range"/>)
 	{
