@@ -32,6 +32,7 @@
 
 #define USE_CUDA_STREAMS
 #define FAST_ATOMIC_SORTING
+#define STRIPS
 
 // FLAME GPU Version Macros.
 #define FLAME_GPU_MAJOR_VERSION 1
