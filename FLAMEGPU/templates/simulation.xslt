@@ -576,7 +576,7 @@ void initialise(char * inputfile){
         temp_scan_bytes_xmachine_message_<xsl:value-of select="xmml:name"/>, 
         (int*) nullptr, 
         (int*) nullptr, 
-        xmachine_message_<xsl:value-of select="xmml:name"/>_grid_size
+        xmachine_message_<xsl:value-of select="xmml:name"/>_grid_size+1
     );
     gpuErrchk(cudaMalloc(&amp;d_temp_scan_storage_xmachine_message_<xsl:value-of select="xmml:name"/>, temp_scan_bytes_xmachine_message_<xsl:value-of select="xmml:name"/>));
 #else
@@ -1622,10 +1622,10 @@ void <xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>
 	</xsl:for-each><xsl:if test="gpu:partitioningSpatial">//bind pbm start and end indices to textures
 	size_t tex_xmachine_message_<xsl:value-of select="xmml:name"/>_pbm_start_byte_offset;
 	size_t tex_xmachine_message_<xsl:value-of select="xmml:name"/>_pbm_end_or_count_byte_offset;
-	gpuErrchk( cudaBindTexture(&amp;tex_xmachine_message_<xsl:value-of select="xmml:name"/>_pbm_start_byte_offset, tex_xmachine_message_<xsl:value-of select="xmml:name"/>_pbm_start, d_<xsl:value-of select="xmml:name"/>_partition_matrix->start, sizeof(int)*xmachine_message_<xsl:value-of select="xmml:name"/>_grid_size));
+	gpuErrchk( cudaBindTexture(&amp;tex_xmachine_message_<xsl:value-of select="xmml:name"/>_pbm_start_byte_offset, tex_xmachine_message_<xsl:value-of select="xmml:name"/>_pbm_start, d_<xsl:value-of select="xmml:name"/>_partition_matrix->start, sizeof(int)*(xmachine_message_<xsl:value-of select="xmml:name"/>_grid_size+1)));
 	h_tex_xmachine_message_<xsl:value-of select="xmml:name"/>_pbm_start_offset = (int)tex_xmachine_message_<xsl:value-of select="xmml:name"/>_pbm_start_byte_offset / sizeof(int);
 	gpuErrchk(cudaMemcpyToSymbol( d_tex_xmachine_message_<xsl:value-of select="xmml:name"/>_pbm_start_offset, &amp;h_tex_xmachine_message_<xsl:value-of select="xmml:name"/>_pbm_start_offset, sizeof(int)));
-	gpuErrchk( cudaBindTexture(&amp;tex_xmachine_message_<xsl:value-of select="xmml:name"/>_pbm_end_or_count_byte_offset, tex_xmachine_message_<xsl:value-of select="xmml:name"/>_pbm_end_or_count, d_<xsl:value-of select="xmml:name"/>_partition_matrix->end_or_count, sizeof(int)*xmachine_message_<xsl:value-of select="xmml:name"/>_grid_size));
+	gpuErrchk( cudaBindTexture(&amp;tex_xmachine_message_<xsl:value-of select="xmml:name"/>_pbm_end_or_count_byte_offset, tex_xmachine_message_<xsl:value-of select="xmml:name"/>_pbm_end_or_count, d_<xsl:value-of select="xmml:name"/>_partition_matrix->end_or_count, sizeof(int)*(xmachine_message_<xsl:value-of select="xmml:name"/>_grid_size+1)));
   h_tex_xmachine_message_<xsl:value-of select="xmml:name"/>_pbm_end_or_count_offset = (int)tex_xmachine_message_<xsl:value-of select="xmml:name"/>_pbm_end_or_count_byte_offset / sizeof(int);
 	gpuErrchk(cudaMemcpyToSymbol( d_tex_xmachine_message_<xsl:value-of select="xmml:name"/>_pbm_end_or_count_offset, &amp;h_tex_xmachine_message_<xsl:value-of select="xmml:name"/>_pbm_end_or_count_offset, sizeof(int)));
 
@@ -1823,7 +1823,7 @@ void <xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>
           temp_scan_bytes_xmachine_message_<xsl:value-of select="xmml:name"/>, 
           d_<xsl:value-of select="xmml:name"/>_partition_matrix->end_or_count,
           d_<xsl:value-of select="xmml:name"/>_partition_matrix->start,
-          xmachine_message_<xsl:value-of select="xmml:name"/>_grid_size, 
+          xmachine_message_<xsl:value-of select="xmml:name"/>_grid_size+1, 
           stream
       );
 	

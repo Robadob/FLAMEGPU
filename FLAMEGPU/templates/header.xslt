@@ -212,8 +212,8 @@ struct xmachine_message_<xsl:value-of select="xmml:name"/>_list
  */
 struct xmachine_message_<xsl:value-of select="xmml:name"/>_PBM
 {
-	int start[xmachine_message_<xsl:value-of select="xmml:name"/>_grid_size];
-	int end_or_count[xmachine_message_<xsl:value-of select="xmml:name"/>_grid_size];
+	int start[xmachine_message_<xsl:value-of select="xmml:name"/>_grid_size+1];
+	int end_or_count[xmachine_message_<xsl:value-of select="xmml:name"/>_grid_size+1];
 };
 </xsl:if></xsl:for-each>
 
