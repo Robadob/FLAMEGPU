@@ -1958,6 +1958,13 @@ extern void reset_<xsl:value-of select="../../xmml:name"/>_<xsl:value-of select=
     h_xmachine_memory_<xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>_count = 0;
 }
 </xsl:for-each>
-    
+
+#ifdef STRIPS
+#ifndef FAST_ATOMIC_SORTING
+#error STRIPS preprocessor macro is only available when FAST_ATOMIC_SORTING is also in use
+#error (Old style PBM construction has not been adjusted to store message count in final element of starts array)
+#endif
+#endif
+
 </xsl:template>
 </xsl:stylesheet>
