@@ -1059,6 +1059,7 @@ __device__ bool load_next_<xsl:value-of select="xmml:name"/>_message(xmachine_me
 		//get the next relative grid position <!-- check the z component to see if we are operating in 2d or 3d -->
         if (next_cell<xsl:choose><xsl:when test="ceiling((gpu:partitioningSpatial/gpu:zmax - gpu:partitioningSpatial/gpu:zmin) div (gpu:partitioningSpatial/gpu:radius * gpu:partitioningSpatial/gpu:modifier)) = 1">2D</xsl:when><xsl:otherwise>3D</xsl:otherwise></xsl:choose>(&amp;relative_cell))
 		{
+#ifndef STRIPS
 			//calculate the next cells grid position and hash
 			glm::ivec3 next_cell_position = agent_grid_cell + relative_cell;
 			int next_cell_hash = message_<xsl:value-of select="xmml:name"/>_hash(next_cell_position);
@@ -1080,16 +1081,40 @@ __device__ bool load_next_<xsl:value-of select="xmml:name"/>_message(xmachine_me
 				//exit the loop as we have found a valid cell with message data
 				move_cell = false;
 			}
+#else
+      //calculate the next cells grid position and hash
+      //relative_cell.x=0//This should already be the case
+      glm::ivec3 first_cell_position = agent_grid_cell + relative_cell;
+      glm::ivec3 last_cell_position = first_cell_position;
+      first_cell_position.x-=<xsl:value-of select="ceiling(1.0 div gpu:partitioningSpatial/gpu:modifier)"/>;
+      last_cell_position.x+=<xsl:value-of select="ceiling(1.0 div gpu:partitioningSpatial/gpu:modifier)"/>;
+      //Clamp the first/last cell x values to range
+      first_cell_position.x = glm::clamp(first_cell_position.x, 0, d_message_<xsl:value-of select="xmml:name"/>_partitionDim.x-1);
+      last_cell_position.x = glm::clamp(last_cell_position.x, 0, d_message_<xsl:value-of select="xmml:name"/>_partitionDim.x-1);
+       int first_cell_hash = message_pedestrian_location_hash(first_cell_position);
+      int last_cell_hash = message_pedestrian_location_hash(last_cell_position);
+      //use the hash to calculate the start index
+      int cell_index_min = tex1Dfetch(tex_xmachine_message_<xsl:value-of select="xmml:name"/>_pbm_start, first_cell_hash + d_tex_xmachine_message_<xsl:value-of select="xmml:name"/>_pbm_start_offset);
+      cell_index_max = tex1Dfetch(tex_xmachine_message_<xsl:value-of select="xmml:name"/>_pbm_start, last_cell_hash + 1 + d_tex_xmachine_message_<xsl:value-of select="xmml:name"/>_pbm_start_offset);
+      //check for messages in the cell (cell index max is the count for atomic sorting)
+      if (cell_index_max > cell_index_min)
+      {
+          //start from the cell index min
+          cell_index = cell_index_min;
+          //exit the loop as we have found a valid cell with message data
+          move_cell = false;
+      }
+#endif
 		}
 		else
 		{
 			//we have exhausted all the neighbouring cells so there are no more messages
 			return false;
 		}
-	}
-	
-	//get message data using texture fetch
-	xmachine_message_<xsl:value-of select="xmml:name"/> temp_message;
+  }
+
+  //get message data using texture fetch
+  xmachine_message_<xsl:value-of select="xmml:name"/> temp_message;
 	temp_message._relative_cell = relative_cell;
 	temp_message._cell_index_max = cell_index_max;
 	temp_message._cell_index = cell_index;
@@ -1126,7 +1151,12 @@ __device__ xmachine_message_<xsl:value-of select="xmml:name"/>* get_first_<xsl:v
   return nullptr;
   }
   <xsl:variable name="range" select="ceiling(1.0 div gpu:partitioningSpatial/gpu:modifier)"/>
-	glm::ivec3 relative_cell = glm::ivec3(-<xsl:value-of select="$range + 1"/>, -<xsl:value-of select="$range"/>, -<xsl:value-of select="$range"/>);
+#ifdef STRIPS
+  //The value of x is unused here due to Strips optimisation
+  glm::ivec3 relative_cell = glm::ivec3(0, -<xsl:value-of select="$range + 1"/>, -<xsl:value-of select="$range"/>);
+#else
+  glm::ivec3 relative_cell = glm::ivec3(-<xsl:value-of select="$range + 1"/>, -<xsl:value-of select="$range"/>, -<xsl:value-of select="$range"/>);
+#endif
 	int cell_index_max = 0;
 	int cell_index = 0;
 	glm::vec3 position = glm::vec3(x, y, z);
