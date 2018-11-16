@@ -1086,6 +1086,7 @@ __device__ bool load_next_<xsl:value-of select="xmml:name"/>_message(xmachine_me
       //relative_cell.x=0//This should already be the case
       glm::ivec3 first_cell_position = agent_grid_cell + relative_cell;
       glm::ivec3 last_cell_position = first_cell_position;
+      //Extend strip each direction by 'range'
       first_cell_position.x-=<xsl:value-of select="ceiling(1.0 div gpu:partitioningSpatial/gpu:modifier)"/>;
       last_cell_position.x+=<xsl:value-of select="ceiling(1.0 div gpu:partitioningSpatial/gpu:modifier)"/>;
       //Clamp the first/last cell x values to range
