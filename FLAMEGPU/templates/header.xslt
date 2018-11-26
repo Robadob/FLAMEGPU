@@ -833,29 +833,55 @@ extern unsigned int g_profile_colour_id;
     eventAttrib.messageType = NVTX_MESSAGE_TYPE_ASCII; \
     eventAttrib.message.ascii = name; \
     nvtxRangePushEx(&amp;eventAttrib); \
-    g_profile_colour_id++; \
-}
-#define PROFILE_POP_RANGE() nvtxRangePop();
+  g_profile_colour_id++; \
+  }
+  #define PROFILE_POP_RANGE() nvtxRangePop();
 
-// Class for simple fire-and-forget profile ranges (ie. functions with multiple return conditions.)
-class ProfileScopedRange {
-public:
-    ProfileScopedRange(const char * name){
-      PROFILE_PUSH_RANGE(name);
-    }
-    ~ProfileScopedRange(){
-      PROFILE_POP_RANGE();
-    }
-};
-#define PROFILE_SCOPED_RANGE(name) ProfileScopedRange uniq_name_using_macros(name);
-#else
-#define PROFILE_PUSH_RANGE(name)
-#define PROFILE_POP_RANGE()
-#define PROFILE_SCOPED_RANGE(name)
-#endif
+  // Class for simple fire-and-forget profile ranges (ie. functions with multiple return conditions.)
+  class ProfileScopedRange {
+  public:
+  ProfileScopedRange(const char * name){
+  PROFILE_PUSH_RANGE(name);
+  }
+  ~ProfileScopedRange(){
+  PROFILE_POP_RANGE();
+  }
+  };
+  #define PROFILE_SCOPED_RANGE(name) ProfileScopedRange uniq_name_using_macros(name);
+  #else
+  #define PROFILE_PUSH_RANGE(name)
+  #define PROFILE_POP_RANGE()
+  #define PROFILE_SCOPED_RANGE(name)
+  #endif
 
+#ifdef USP_EVENTS
+<xsl:for-each select="gpu:xmodel/xmml:layers/xmml:layer">
+  <xsl:sort select="count(gpu:layerFunction)" order="descending"/>
+  <xsl:if test="position() =1">
+      extern cudaEvent_t usp_kernel_start[<xsl:value-of select="count(gpu:layerFunction)"/>];
+      extern cudaEvent_t usp_kernel_end[<xsl:value-of select="count(gpu:layerFunction)"/>];
+      extern cudaEvent_t usp_function_start[<xsl:value-of select="count(gpu:layerFunction)"/>];
+      extern cudaEvent_t usp_function_end[<xsl:value-of select="count(gpu:layerFunction)"/>];
+      extern cudaEvent_t usp_construction_start[<xsl:value-of select="count(gpu:layerFunction)"/>];
+      extern cudaEvent_t usp_construction_end[<xsl:value-of select="count(gpu:layerFunction)"/>];
+  </xsl:if>
+</xsl:for-each>
+<xsl:for-each select="gpu:xmodel/xmml:xagents/gpu:xagent/xmml:functions/gpu:function">
+  <xsl:variable name="functionname" select="../../xmml:name"/>
+  <!--<xsl:if test="xmml:inputs/gpu:input">
+    <xsl:variable name="messagename" select="xmml:inputs/gpu:input/xmml:messageName"/>
+    <xsl:for-each select="../../../../xmml:messages/gpu:message[xmml:name=$messagename]">
+      <xsl:if test="gpu:partitioningSpatial">-->
+   extern float usp_kernel_time_<xsl:value-of select="$functionname"/>_<xsl:value-of select="xmml:name"/>;
+   extern float usp_function_time_<xsl:value-of select="$functionname"/>_<xsl:value-of select="xmml:name"/>;
+   extern float usp_construction_time_<xsl:value-of select="$functionname"/>_<xsl:value-of select="xmml:name"/>;
+  <!--</xsl:if>
+    </xsl:for-each>
+  </xsl:if>-->
+</xsl:for-each>
+#endif //USP_EVENTS
 
-#endif //__HEADER
+  #endif //__HEADER
 
 </xsl:template>
 </xsl:stylesheet>

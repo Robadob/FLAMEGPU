@@ -361,7 +361,7 @@ int scan_last_included;      /**&lt; Indicates if last sum value is included in 
 /** <xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>
  * Agent function prototype for <xsl:value-of select="xmml:name"/> function of <xsl:value-of select="../../xmml:name"/> agent
  */
-void <xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>(cudaStream_t &amp;stream);
+void <xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>(cudaStream_t &amp;stream, unsigned int streamI = 0);
 </xsl:for-each>
   
 void setPaddingAndOffset()
@@ -720,9 +720,26 @@ void initialise(char * inputfile){
 		printf("Init agent_<xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>_count: %u\n",get_agent_<xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>_count());
 	</xsl:for-each>
 #endif
-} 
 
-<xsl:for-each select="gpu:xmodel/xmml:xagents/gpu:xagent"><xsl:if test="gpu:type='continuous'"> <xsl:for-each select="xmml:states/gpu:state">
+#ifdef USP_EVENTS
+<xsl:for-each select="gpu:xmodel/xmml:layers/xmml:layer">
+  <xsl:sort select="count(gpu:layerFunction)" order="descending"/>
+  <xsl:if test="position() =1">
+    <!-- Get the layer with most functions -->
+    <xsl:for-each select="gpu:layerFunction">
+      gpuErrchk(cudaEventCreate(&amp;usp_kernel_start[<xsl:value-of select="position()-1"/>]));
+      gpuErrchk(cudaEventCreate(&amp;usp_kernel_end[<xsl:value-of select="position()-1"/>]));
+      gpuErrchk(cudaEventCreate(&amp;usp_function_start[<xsl:value-of select="position()-1"/>]));
+      gpuErrchk(cudaEventCreate(&amp;usp_function_end[<xsl:value-of select="position()-1"/>]));
+      gpuErrchk(cudaEventCreate(&amp;usp_construction_start[<xsl:value-of select="position()-1"/>]));
+      gpuErrchk(cudaEventCreate(&amp;usp_construction_end[<xsl:value-of select="position()-1"/>]));
+    </xsl:for-each>
+  </xsl:if>
+</xsl:for-each>
+#endif //USP_EVENTS
+  }
+
+  <xsl:for-each select="gpu:xmodel/xmml:xagents/gpu:xagent"><xsl:if test="gpu:type='continuous'"> <xsl:for-each select="xmml:states/gpu:state">
 void sort_<xsl:value-of select="../../xmml:name"/>s_<xsl:value-of select="xmml:name"/>(void (*generate_key_value_pairs)(unsigned int* keys, unsigned int* values, xmachine_memory_<xsl:value-of select="../../xmml:name"/>_list* agents))
 {
 	int blockSize;
@@ -849,6 +866,22 @@ void cleanup(){
 	cudaEventDestroy(instrument_start);
 	cudaEventDestroy(instrument_stop);
 #endif
+#ifdef USP_EVENTS
+<xsl:for-each select="gpu:xmodel/xmml:layers/xmml:layer">
+  <xsl:sort select="count(gpu:layerFunction)" order="descending"/>
+  <xsl:if test="position() =1">
+    <!-- Get the layer with most functions -->
+    <xsl:for-each select="gpu:layerFunction">
+      gpuErrchk(cudaEventDestroy(usp_kernel_start[<xsl:value-of select="position()-1"/>]));
+      gpuErrchk(cudaEventDestroy(usp_kernel_end[<xsl:value-of select="position()-1"/>]));
+      gpuErrchk(cudaEventDestroy(usp_function_start[<xsl:value-of select="position()-1"/>]));
+      gpuErrchk(cudaEventDestroy(usp_function_end[<xsl:value-of select="position()-1"/>]));
+      gpuErrchk(cudaEventDestroy(usp_construction_start[<xsl:value-of select="position()-1"/>]));
+      gpuErrchk(cudaEventDestroy(usp_construction_end[<xsl:value-of select="position()-1"/>]));
+    </xsl:for-each>
+  </xsl:if>
+</xsl:for-each>
+#endif //USP_EVENTS
 }
 
 void singleIteration(){
@@ -876,7 +909,7 @@ PROFILE_SCOPED_RANGE("singleIteration");
 #endif
 	<xsl:variable name="function" select="xmml:name"/><xsl:variable name="stream_num" select="position()"/><xsl:for-each select="../../../xmml:xagents/gpu:xagent/xmml:functions/gpu:function[xmml:name=$function]">
     PROFILE_PUSH_RANGE("<xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>");
-	<xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>(stream<xsl:value-of select="$stream_num"/>);
+	<xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>(stream<xsl:value-of select="$stream_num"/>, <xsl:value-of select="$stream_num - 1"/>);
     PROFILE_POP_RANGE();
 #if defined(INSTRUMENT_AGENT_FUNCTIONS) &amp;&amp; INSTRUMENT_AGENT_FUNCTIONS
 	cudaEventRecord(instrument_stop);
@@ -1371,8 +1404,21 @@ int <xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>_
 /** <xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>
  * Agent function prototype for <xsl:value-of select="xmml:name"/> function of <xsl:value-of select="../../xmml:name"/> agent
  */
-void <xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>(cudaStream_t &amp;stream){
+void <xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>(cudaStream_t &amp;stream, unsigned int streamI){
 
+
+<xsl:variable name="functionname" select="../../xmml:name"/>
+<!--<xsl:if test="xmml:inputs/gpu:input">
+  <xsl:variable name="messagename" select="xmml:inputs/gpu:input/xmml:messageName"/>
+  <xsl:for-each select="../../../../xmml:messages/gpu:message[xmml:name=$messagename]">
+    <xsl:if test="gpu:partitioningSpatial">-->
+#ifdef USP_EVENTS
+gpuErrchk(cudaEventRecord(usp_function_start[streamI]));
+#endif
+    <!--</xsl:if>
+  </xsl:for-each>
+</xsl:if>-->
+  
     int sm_size;
     int blockSize;
     int minGridSize;
@@ -1651,8 +1697,10 @@ void <xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>
 	reset_<xsl:value-of select="../../xmml:name"/>_scan_input&lt;&lt;&lt;gridSize, blockSize, 0, stream&gt;&gt;&gt;(d_<xsl:value-of select="../../xmml:name"/>s);
 	gpuErrchkLaunch();
 	</xsl:if></xsl:if>
-	
-	//MAIN XMACHINE FUNCTION CALL (<xsl:value-of select="xmml:name"/>)
+  #ifdef USP_EVENTS
+  gpuErrchk(cudaEventRecord(usp_kernel_start[streamI]));
+  #endif
+  //MAIN XMACHINE FUNCTION CALL (<xsl:value-of select="xmml:name"/>)
 	//Reallocate   : <xsl:choose><xsl:when test="gpu:reallocate='true'">true</xsl:when><xsl:otherwise>false</xsl:otherwise></xsl:choose>
 	//Input        : <xsl:value-of select="xmml:inputs/gpu:input/xmml:messageName"/>
 	//Output       : <xsl:value-of select="xmml:outputs/gpu:output/xmml:messageName"/>
@@ -1661,9 +1709,12 @@ void <xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>
 		<xsl:if test="xmml:inputs/gpu:input"><xsl:variable name="messagename" select="xmml:inputs/gpu:input/xmml:messageName"/>, d_<xsl:value-of select="xmml:inputs/gpu:input/xmml:messageName"/>s<xsl:for-each select="../../../../xmml:messages/gpu:message[xmml:name=$messagename]"><xsl:if test="gpu:partitioningSpatial">, d_<xsl:value-of select="xmml:name"/>_partition_matrix</xsl:if><xsl:if test="gpu:partitioningGraphEdge">, d_xmachine_message_<xsl:value-of select="xmml:name"/>_bounds</xsl:if></xsl:for-each></xsl:if>
 		<xsl:if test="xmml:outputs/gpu:output">, d_<xsl:value-of select="xmml:outputs/gpu:output/xmml:messageName"/>s<xsl:if test="xmml:outputs/gpu:output/xmml:type='optional_message'">_swap</xsl:if></xsl:if>
 		<xsl:if test="gpu:RNG='true'">, d_rand48</xsl:if>);
-	gpuErrchkLaunch();
-	
-	<xsl:if test="xmml:inputs/gpu:input"><xsl:variable name="messageName" select="xmml:inputs/gpu:input/xmml:messageName"/>
+  gpuErrchkLaunch();
+  #ifdef USP_EVENTS
+  gpuErrchk(cudaEventRecord(usp_kernel_end[streamI]));
+  #endif
+
+  <xsl:if test="xmml:inputs/gpu:input"><xsl:variable name="messageName" select="xmml:inputs/gpu:input/xmml:messageName"/>
 	//UNBIND MESSAGE INPUT VARIABLE TEXTURES
 	<xsl:for-each select="../../../../xmml:messages/gpu:message[xmml:name=$messageName]">
 	<xsl:if test="gpu:partitioningDiscrete or gpu:partitioningSpatial">//any agent with discrete or partitioned message input uses texture caching
@@ -1799,12 +1850,16 @@ void <xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>
 	gpuErrchk( cudaMemcpyToSymbol( d_xmachine_memory_<xsl:value-of select="xmml:xagentName"/>_<xsl:value-of select="xmml:state"/>_count, &amp;h_xmachine_memory_<xsl:value-of select="xmml:xagentName"/>_<xsl:value-of select="xmml:state"/>_count, sizeof(int)));	
 	</xsl:if></xsl:for-each>
 	</xsl:if>
-	
-	<xsl:if test="xmml:outputs/gpu:output"><xsl:variable name="messageName" select="xmml:outputs/gpu:output/xmml:messageName"/>
+
+  #ifdef USP_EVENTS
+  gpuErrchk(cudaEventRecord(usp_construction_start[streamI]));
+  #endif
+  <xsl:if test="xmml:outputs/gpu:output"><xsl:variable name="messageName" select="xmml:outputs/gpu:output/xmml:messageName"/>
 	<xsl:for-each select="../../../../xmml:messages/gpu:message[xmml:name=$messageName]">
-	<xsl:if test="gpu:partitioningSpatial">
-	//reset partition matrix
-	gpuErrchk( cudaMemset( (void*) d_<xsl:value-of select="xmml:name"/>_partition_matrix, 0, sizeof(xmachine_message_<xsl:value-of select="xmml:name"/>_PBM)));
+
+    <xsl:if test="gpu:partitioningSpatial">
+    //reset partition matrix
+    gpuErrchk( cudaMemset( (void*) d_<xsl:value-of select="xmml:name"/>_partition_matrix, 0, sizeof(xmachine_message_<xsl:value-of select="xmml:name"/>_PBM)));
     //PR Bug fix: Second fix. This should prevent future problems when multiple agents write the same message as now the message structure is completely rebuilt after an output.
     if (h_message_<xsl:value-of select="xmml:name"/>_count > 0){
 #ifdef FAST_ATOMIC_SORTING
@@ -1861,10 +1916,11 @@ void <xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>
 	xmachine_message_<xsl:value-of select="xmml:name"/>_list* d_<xsl:value-of select="xmml:name"/>s_temp = d_<xsl:value-of select="xmml:name"/>s;
 	d_<xsl:value-of select="xmml:name"/>s = d_<xsl:value-of select="xmml:name"/>s_swap;
 	d_<xsl:value-of select="xmml:name"/>s_swap = d_<xsl:value-of select="xmml:name"/>s_temp;
+
+
 	</xsl:if>
 
-
-<xsl:if test="gpu:partitioningGraphEdge">
+    <xsl:if test="gpu:partitioningGraphEdge">
   // Sort messages based on the edge index, and construct the relevant data structure for graph edge based messaging. Keys are sorted and then message data is scattered. 
 
   // Reset the message bounds data structure to 0
@@ -1904,9 +1960,12 @@ void <xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>
 
 	</xsl:for-each>
 	</xsl:if>
-	
-	//************************ MOVE AGENTS TO NEXT STATE ****************************
-    <xsl:choose>
+  #ifdef USP_EVENTS
+  gpuErrchk(cudaEventRecord(usp_construction_end[streamI]));
+  #endif
+
+  //************************ MOVE AGENTS TO NEXT STATE ****************************
+  <xsl:choose>
     <xsl:when test="../../gpu:type='continuous'">
 	//check the working agents wont exceed the buffer size in the new state list
 	if (h_xmachine_memory_<xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:nextState"/>_count+h_xmachine_memory_<xsl:value-of select="../../xmml:name"/>_count > xmachine_memory_<xsl:value-of select="../../xmml:name"/>_MAX){
@@ -1942,8 +2001,27 @@ void <xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>
 	gpuErrchk( cudaMemcpyToSymbol( d_xmachine_memory_<xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:currentState"/>_count, &amp;h_xmachine_memory_<xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:currentState"/>_count, sizeof(int)));	
 	</xsl:when>
   </xsl:choose>
-	
-}
+<!--<xsl:if test="xmml:inputs/gpu:input">
+  <xsl:variable name="messagename" select="xmml:inputs/gpu:input/xmml:messageName"/>
+  <xsl:for-each select="../../../../xmml:messages/gpu:message[xmml:name=$messagename]">
+    <xsl:if test="gpu:partitioningSpatial">-->
+#ifdef USP_EVENTS
+      gpuErrchk(cudaEventRecord(usp_function_end[streamI]));
+      gpuErrchk(cudaEventSynchronize(usp_function_end[streamI]));
+      {
+        float milliseconds = 0;
+        gpuErrchk(cudaEventElapsedTime(&amp;milliseconds, usp_kernel_start[streamI], usp_kernel_end[streamI]));
+        usp_kernel_time_<xsl:value-of select="$functionname"/>_<xsl:value-of select="xmml:name"/>+=milliseconds;
+        gpuErrchk(cudaEventElapsedTime(&amp;milliseconds, usp_function_start[streamI], usp_function_end[streamI]));
+        usp_function_time_<xsl:value-of select="$functionname"/>_<xsl:value-of select="xmml:name"/>+=milliseconds;
+        gpuErrchk(cudaEventElapsedTime(&amp;milliseconds, usp_construction_start[streamI], usp_construction_end[streamI]));
+        usp_construction_time_<xsl:value-of select="$functionname"/>_<xsl:value-of select="xmml:name"/>+=milliseconds;
+      }
+#endif
+    <!--</xsl:if>
+  </xsl:for-each>
+</xsl:if>-->
+  }
 
 
 </xsl:for-each>
@@ -1955,6 +2033,32 @@ extern void reset_<xsl:value-of select="../../xmml:name"/>_<xsl:value-of select=
     h_xmachine_memory_<xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>_count = 0;
 }
 </xsl:for-each>
-    
+
+#ifdef USP_EVENTS
+<xsl:for-each select="gpu:xmodel/xmml:layers/xmml:layer">
+  <xsl:sort select="count(gpu:layerFunction)" order="descending"/>
+  <xsl:if test="position() =1">
+    cudaEvent_t usp_kernel_start[<xsl:value-of select="count(gpu:layerFunction)"/>];
+    cudaEvent_t usp_kernel_end[<xsl:value-of select="count(gpu:layerFunction)"/>];
+    cudaEvent_t usp_function_start[<xsl:value-of select="count(gpu:layerFunction)"/>];
+    cudaEvent_t usp_function_end[<xsl:value-of select="count(gpu:layerFunction)"/>];
+    cudaEvent_t usp_construction_start[<xsl:value-of select="count(gpu:layerFunction)"/>];
+    cudaEvent_t usp_construction_end[<xsl:value-of select="count(gpu:layerFunction)"/>];
+  </xsl:if>
+</xsl:for-each>
+<xsl:for-each select="gpu:xmodel/xmml:xagents/gpu:xagent/xmml:functions/gpu:function">
+  <xsl:variable name="functionname" select="../../xmml:name"/>
+  <!--<xsl:if test="xmml:inputs/gpu:input">
+    <xsl:variable name="messagename" select="xmml:inputs/gpu:input/xmml:messageName"/>
+    <xsl:for-each select="../../../../xmml:messages/gpu:message[xmml:name=$messagename]">
+      <xsl:if test="gpu:partitioningSpatial">-->
+   float usp_kernel_time_<xsl:value-of select="$functionname"/>_<xsl:value-of select="xmml:name"/> = 0.0f;
+   float usp_function_time_<xsl:value-of select="$functionname"/>_<xsl:value-of select="xmml:name"/> = 0.0f;
+   float usp_construction_time_<xsl:value-of select="$functionname"/>_<xsl:value-of select="xmml:name"/> = 0.0f;
+  <!--</xsl:if>
+    </xsl:for-each>
+  </xsl:if>-->
+</xsl:for-each>
+#endif //USP_EVENTS
 </xsl:template>
 </xsl:stylesheet>

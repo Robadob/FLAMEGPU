@@ -26,7 +26,7 @@ char inputfile[100];          /**&lt; Input path char buffer*/
 char outputpath[1000];         /**&lt; Output path char buffer*/
 
 // Define the default value indicating if XML output should be produced or not.
-#define OUTPUT_TO_XML 1
+#define OUTPUT_TO_XML 0
 
 #define HELP_OPTION_SHORT "-h"
 #define HELP_OPTION_LONG "--help"
@@ -433,18 +433,36 @@ int main( int argc, char** argv)
 	cudaEventSynchronize(stop);
 
 	cudaEventElapsedTime(&amp;milliseconds, start, stop);
-	printf( "Total Processing time: %f (ms)\n", milliseconds);
+  printf( "Total Processing time: %f (ms)\n", milliseconds);
+
+  #ifdef USP_EVENTS
+  printf("Function timings: function/kernel/construction\n");
+  <xsl:for-each select="gpu:xmodel/xmml:xagents/gpu:xagent/xmml:functions/gpu:function">
+    <xsl:variable name="functionname" select="../../xmml:name"/>
+    <!--<xsl:if test="xmml:inputs/gpu:input">
+      <xsl:variable name="messagename" select="xmml:inputs/gpu:input/xmml:messageName"/>
+      <xsl:for-each select="../../../../xmml:messages/gpu:message[xmml:name=$messagename]">
+        <xsl:if test="gpu:partitioningSpatial">-->
+          usp_kernel_time_<xsl:value-of select="$functionname"/>_<xsl:value-of select="xmml:name"/> /= iterations;
+          usp_function_time_<xsl:value-of select="$functionname"/>_<xsl:value-of select="xmml:name"/> /= iterations;
+          usp_construction_time_<xsl:value-of select="$functionname"/>_<xsl:value-of select="xmml:name"/> /= iterations;
+          printf("<xsl:value-of select="$functionname"/>_<xsl:value-of select="xmml:name"/>: %.5fms/%.5fms/%.5fms\n",usp_function_time_<xsl:value-of select="$functionname"/>_<xsl:value-of select="xmml:name"/>, usp_kernel_time_<xsl:value-of select="$functionname"/>_<xsl:value-of select="xmml:name"/>, usp_construction_time_<xsl:value-of select="$functionname"/>_<xsl:value-of select="xmml:name"/>);
+        <!--</xsl:if>
+      </xsl:for-each>
+    </xsl:if>-->
+  </xsl:for-each>
+  #endif //USP_EVENTS
 #endif
 
-	cleanup();
-	PROFILE_PUSH_RANGE("cudaDeviceReset");
-	cudaStatus = cudaDeviceReset();
-	PROFILE_POP_RANGE();
-	if (cudaStatus != cudaSuccess) {
-		fprintf(stderr, "Error resetting the device!\n");
-		return EXIT_FAILURE;
-	}
-	return EXIT_SUCCESS;
-}
+  cleanup();
+  PROFILE_PUSH_RANGE("cudaDeviceReset");
+  cudaStatus = cudaDeviceReset();
+  PROFILE_POP_RANGE();
+  if (cudaStatus != cudaSuccess) {
+  fprintf(stderr, "Error resetting the device!\n");
+  return EXIT_FAILURE;
+  }
+  return EXIT_SUCCESS;
+  }
 </xsl:template>
 </xsl:stylesheet>
