@@ -1413,7 +1413,7 @@ void <xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>
   <xsl:for-each select="../../../../xmml:messages/gpu:message[xmml:name=$messagename]">
     <xsl:if test="gpu:partitioningSpatial">-->
 #ifdef USP_EVENTS
-gpuErrchk(cudaEventRecord(usp_function_start[streamI]));
+gpuErrchk(cudaEventRecord(usp_function_start[streamI], stream));
 #endif
     <!--</xsl:if>
   </xsl:for-each>
@@ -1698,7 +1698,7 @@ gpuErrchk(cudaEventRecord(usp_function_start[streamI]));
 	gpuErrchkLaunch();
 	</xsl:if></xsl:if>
   #ifdef USP_EVENTS
-  gpuErrchk(cudaEventRecord(usp_kernel_start[streamI]));
+  gpuErrchk(cudaEventRecord(usp_kernel_start[streamI], stream));
   #endif
   //MAIN XMACHINE FUNCTION CALL (<xsl:value-of select="xmml:name"/>)
 	//Reallocate   : <xsl:choose><xsl:when test="gpu:reallocate='true'">true</xsl:when><xsl:otherwise>false</xsl:otherwise></xsl:choose>
@@ -1711,7 +1711,7 @@ gpuErrchk(cudaEventRecord(usp_function_start[streamI]));
 		<xsl:if test="gpu:RNG='true'">, d_rand48</xsl:if>);
   gpuErrchkLaunch();
   #ifdef USP_EVENTS
-  gpuErrchk(cudaEventRecord(usp_kernel_end[streamI]));
+  gpuErrchk(cudaEventRecord(usp_kernel_end[streamI], stream));
   #endif
 
   <xsl:if test="xmml:inputs/gpu:input"><xsl:variable name="messageName" select="xmml:inputs/gpu:input/xmml:messageName"/>
@@ -1852,7 +1852,7 @@ gpuErrchk(cudaEventRecord(usp_function_start[streamI]));
 	</xsl:if>
 
   #ifdef USP_EVENTS
-  gpuErrchk(cudaEventRecord(usp_construction_start[streamI]));
+  gpuErrchk(cudaEventRecord(usp_construction_start[streamI], stream));
   #endif
   <xsl:if test="xmml:outputs/gpu:output"><xsl:variable name="messageName" select="xmml:outputs/gpu:output/xmml:messageName"/>
 	<xsl:for-each select="../../../../xmml:messages/gpu:message[xmml:name=$messageName]">
@@ -1961,7 +1961,7 @@ gpuErrchk(cudaEventRecord(usp_function_start[streamI]));
 	</xsl:for-each>
 	</xsl:if>
   #ifdef USP_EVENTS
-  gpuErrchk(cudaEventRecord(usp_construction_end[streamI]));
+  gpuErrchk(cudaEventRecord(usp_construction_end[streamI], stream));
   #endif
 
   //************************ MOVE AGENTS TO NEXT STATE ****************************
@@ -2006,7 +2006,7 @@ gpuErrchk(cudaEventRecord(usp_function_start[streamI]));
   <xsl:for-each select="../../../../xmml:messages/gpu:message[xmml:name=$messagename]">
     <xsl:if test="gpu:partitioningSpatial">-->
 #ifdef USP_EVENTS
-      gpuErrchk(cudaEventRecord(usp_function_end[streamI]));
+      gpuErrchk(cudaEventRecord(usp_function_end[streamI], stream));
       gpuErrchk(cudaEventSynchronize(usp_function_end[streamI]));
       {
         float milliseconds = 0;
