@@ -105,7 +105,7 @@ __inline__ __device__ double tex1DfetchDouble(texture&lt;int2, 1, cudaReadModeEl
  * @param relative_cell pointer to the relative cell position
  * @return boolean if there is a next cell. True unless relative_Cell value was 1,1,1
  */
-__device__ bool next_cell3D(glm::ivec3* relative_cell)
+__device__ bool next_cell3D_<xsl:value-of select="../xmml:name"/>(glm::ivec3* relative_cell)
 {
 #ifndef STRIPS
 	if (relative_cell->x &lt; <xsl:value-of select="$range"/>)
@@ -139,7 +139,7 @@ __device__ bool next_cell3D(glm::ivec3* relative_cell)
  * @param relative_cell pointer to the relative cell position
  * @return boolean if there is a next cell. True unless relative_Cell value was 1,1
  */
-__device__ bool next_cell2D(glm::ivec3* relative_cell)
+__device__ bool next_cell2D_<xsl:value-of select="../xmml:name"/>(glm::ivec3* relative_cell)
 {
 #ifndef STRIPS
 	if (relative_cell->x &lt; <xsl:value-of select="$range"/>)
@@ -1057,7 +1057,7 @@ __device__ bool load_next_<xsl:value-of select="xmml:name"/>_message(xmachine_me
 	while(move_cell)
 	{
 		//get the next relative grid position <!-- check the z component to see if we are operating in 2d or 3d -->
-        if (next_cell<xsl:choose><xsl:when test="ceiling((gpu:partitioningSpatial/gpu:zmax - gpu:partitioningSpatial/gpu:zmin) div (gpu:partitioningSpatial/gpu:radius * gpu:partitioningSpatial/gpu:modifier)) = 1">2D</xsl:when><xsl:otherwise>3D</xsl:otherwise></xsl:choose>(&amp;relative_cell))
+        if (next_cell<xsl:choose><xsl:when test="ceiling((gpu:partitioningSpatial/gpu:zmax - gpu:partitioningSpatial/gpu:zmin) div (gpu:partitioningSpatial/gpu:radius * gpu:partitioningSpatial/gpu:modifier)) = 1">2D</xsl:when><xsl:otherwise>3D</xsl:otherwise></xsl:choose>_<xsl:value-of select="xmml:name"/>(&amp;relative_cell))
 		{
 #ifndef STRIPS
 			//calculate the next cells grid position and hash
@@ -1092,8 +1092,8 @@ __device__ bool load_next_<xsl:value-of select="xmml:name"/>_message(xmachine_me
       //Clamp the first/last cell x values to range
       first_cell_position.x = glm::clamp(first_cell_position.x, 0, d_message_<xsl:value-of select="xmml:name"/>_partitionDim.x-1);
       last_cell_position.x = glm::clamp(last_cell_position.x, 0, d_message_<xsl:value-of select="xmml:name"/>_partitionDim.x-1);
-       int first_cell_hash = message_pedestrian_location_hash(first_cell_position);
-      int last_cell_hash = message_pedestrian_location_hash(last_cell_position);
+       int first_cell_hash = message_<xsl:value-of select="xmml:name"/>_hash(first_cell_position);
+      int last_cell_hash = message_<xsl:value-of select="xmml:name"/>_hash(last_cell_position);
       //use the hash to calculate the start index
       int cell_index_min = tex1Dfetch(tex_xmachine_message_<xsl:value-of select="xmml:name"/>_pbm_start, first_cell_hash + d_tex_xmachine_message_<xsl:value-of select="xmml:name"/>_pbm_start_offset);
       cell_index_max = tex1Dfetch(tex_xmachine_message_<xsl:value-of select="xmml:name"/>_pbm_start, last_cell_hash + 1 + d_tex_xmachine_message_<xsl:value-of select="xmml:name"/>_pbm_start_offset);
