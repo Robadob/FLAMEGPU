@@ -148,7 +148,7 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <PreprocessorDefinitions>WIN32;WIN64;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;WIN64;NDEBUG;USP_EVENTS;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(CudaToolkitIncludeDir);..\..\include;.\src;.\src\model;.\src\dynamic;.\src\visualisation;%(Include)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -258,6 +258,7 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     <FLAMEGPU_Template_Build_Rule Include="src\model\XMLModelFile.xml">
       <VisualisationTransform Condition="'$(Configuration)|$(Platform)'=='Debug_Visualisation|x64'">true</VisualisationTransform>
       <VisualisationTransform Condition="'$(Configuration)|$(Platform)'=='Release_Visualisation|x64'">true</VisualisationTransform>
+      <SubType>Designer</SubType>
     </FLAMEGPU_Template_Build_Rule>
   </ItemGroup>
   <ItemGroup>
