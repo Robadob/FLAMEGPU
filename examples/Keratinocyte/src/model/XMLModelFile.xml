@@ -280,6 +280,7 @@
         </gpu:variable>
       </variables>
       <gpu:partitioningSpatial>
+        <gpu:modifier>0.5</gpu:modifier>
         <gpu:radius>125</gpu:radius>
         <gpu:xmin>0.0</gpu:xmin>
         <gpu:xmax>500</gpu:xmax>
@@ -315,6 +316,7 @@
         </gpu:variable>
       </variables>
       <gpu:partitioningSpatial>
+        <gpu:modifier>0.5</gpu:modifier>
         <gpu:radius>15.625</gpu:radius>
         <gpu:xmin>0.0</gpu:xmin>
         <gpu:xmax>500</gpu:xmax>

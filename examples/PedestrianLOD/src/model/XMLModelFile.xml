@@ -156,13 +156,14 @@
         </gpu:variable>
       </variables>
       <gpu:partitioningSpatial>
+        <gpu:modifier>0.5</gpu:modifier>
         <gpu:radius>0.025</gpu:radius>
         <gpu:xmin>-2.0</gpu:xmin>
         <gpu:xmax>2.0</gpu:xmax>
         <gpu:ymin>-2.0</gpu:ymin>
         <gpu:ymax>2.0</gpu:ymax>
         <gpu:zmin>0.0</gpu:zmin>
-        <gpu:zmax>0.025</gpu:zmax>
+        <gpu:zmax>0.0125</gpu:zmax>
       </gpu:partitioningSpatial>
       <gpu:bufferSize>16384</gpu:bufferSize>
     </gpu:message>
