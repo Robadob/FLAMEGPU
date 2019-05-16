@@ -20,8 +20,8 @@
 #include "header.h"
 
 //Environment Bounds
-#define MIN_POSITION -0.5f
-#define MAX_POSITION +0.5f
+#define MIN_POSITION -2.5f
+#define MAX_POSITION +2.5f
 
 //Interaction radius
 #define INTERACTION_RADIUS 0.1f

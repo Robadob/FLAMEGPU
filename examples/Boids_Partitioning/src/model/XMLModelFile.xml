@@ -75,7 +75,7 @@
         <initialState>default</initialState>
       </states>
       <gpu:type>continuous</gpu:type>
-      <gpu:bufferSize>2048</gpu:bufferSize>
+      <gpu:bufferSize>262144</gpu:bufferSize>
     </gpu:xagent>
   </xagents>
   <messages>
@@ -114,14 +114,14 @@
       </variables>
       <gpu:partitioningSpatial>
         <gpu:radius>0.1</gpu:radius>
-        <gpu:xmin>-0.5</gpu:xmin>
-        <gpu:xmax>0.5</gpu:xmax>
-        <gpu:ymin>-0.5</gpu:ymin>
-        <gpu:ymax>0.5</gpu:ymax>
-        <gpu:zmin>-0.5</gpu:zmin>
-        <gpu:zmax>0.5</gpu:zmax>
+        <gpu:xmin>-2.5</gpu:xmin>
+        <gpu:xmax>2.5</gpu:xmax>
+        <gpu:ymin>-2.5</gpu:ymin>
+        <gpu:ymax>2.5</gpu:ymax>
+        <gpu:zmin>-2.5</gpu:zmin>
+        <gpu:zmax>2.5</gpu:zmax>
       </gpu:partitioningSpatial>
-      <gpu:bufferSize>2048</gpu:bufferSize>
+      <gpu:bufferSize>262144</gpu:bufferSize>
     </gpu:message>
   </messages>
   <layers>
